@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="index.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    
+        <link rel="stylesheet" href="ContextMenu.css" />
+        <script src="ContextMenu.js"></script>
+    </head>
+    <body>
+        <div id="main-controls">
+            <button class="success bi bi-play-fill"></button>
+            <button class="bi bi-code-slash" onclick="toggleCodeMode()"></button>
+        </div>
+        <div id="main-viewport">
+            <canvas id="c" width="1280" height="720"></canvas>
+            <div id="codespace"></div>
+        </div>
+        <div id="main-scenes">
+            <span class="window-title">Scenes</span>
+            <div id="main-scenes-wrapper-2"><div id="main-scenes-wrapper"></div></div>
+        </div>
+        <div id="main-inspector">
+            <span class="window-title">Inspector</span>
+        </div>
+        <div id="main-components">
+            <span class="window-title">Componenets</span>
+        </div>
+
+        <script src="monaco-editor/min/vs/loader.js"></script>
+        <script src="enum.js"></script>
+        <script src="class.js"></script>
+        <script src="components.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>
