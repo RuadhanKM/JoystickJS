@@ -35,7 +35,7 @@ class JJS_Object {
 
         this.inspectorElements = [
             {
-                type: "textbox",
+                type: "text",
                 title: "Name",
                 value: "name"
             }
@@ -125,7 +125,7 @@ class JJS_Sprite extends JJS_Rect {
         this.name = "New Sprite"
 
         this.inspectorElements.push({
-            type: "textbox",
+            type: "text",
             title: "Sprite URL",
             value: "img"
         })
