@@ -34,19 +34,30 @@ class JJS_Object {
         this.name = "New Object"
 
         this.inspectorElements = [
-            {
-                type: "text",
-                title: "Name",
-                value: "name"
-            }
+            "name"
         ]
 
         this.components = []
     }
 
     addComponent(component) {
-        this[component.name] = component.body
+        if (this[component.name]) {
+            console.warn(`Component with name ${component.name} already exsists on this object!`)
+            return
+        }
+
+        this[component.name] = component
         this.components.push(component)
+    }
+
+    removeComponent(component) {
+        if (!this[component.name]) {
+            console.warn(`Component with name ${component.name} doesn't exsist on this object!`)
+            return
+        }
+
+        delete this[component.name]
+        this.components.splice(this.components.indexOf(component), 1)
     }
 
     getDecendents() {
@@ -138,4 +149,10 @@ class JJS_Cam extends JJS_Rect {
         this.class = OBJECT_TYPE_CAM
         this.name = "New Cam"
     }
+}
+
+const isColor = (strColor) => {
+    const s = new Option().style
+    s.color = strColor
+    return s.color !== ''
 }

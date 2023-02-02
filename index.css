@@ -76,6 +76,8 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 500;
     border-radius: 0.3vh;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .inspector-entry input {
@@ -189,6 +191,10 @@
     display: flex;
     flex-direction: column;
     user-select: none;
+}
+
+#inspector-wrapper {
+    overflow-y: auto;
 }
 
 #main-components {

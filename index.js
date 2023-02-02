@@ -33,6 +33,13 @@ const sceneMenuItems = [
             click: () => addSceneObject(new JJS_Cam(new Vec2(), new Vec2(1280, 720), selectedScenesMenuObject))
         }
     },
+    {
+        content: `Delete`,
+        events: {
+            click: () => {selectedScenesMenuObject.parent.children.splice(selectedScenesMenuObject.parent.children.indexOf(selectedScenesMenuObject), 1); selectedScenesMenu = undefined; selectedScenesMenuObject = undefined; updateSceneList(); updateInspector()}
+        },
+        divider: `top`
+    }
 ]
 
 const componentMenuItems = [
@@ -46,15 +53,9 @@ const componentMenuItems = [
 
 const componentSelectMenuItems = [
     {
-        content: `Rename`,
-        events: {
-
-        }
-    },
-    {
         content: `Add to selected object`,
         events: {
-            click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(eval(selectedComponentObject.value)); updateInspector()}
+            click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(selectedComponentObject.parsedValue); updateInspector()}
         }
     }
 ]
@@ -77,32 +78,45 @@ function addInspectorEntry(element, namespace, toAdd) {
     inspectorEntry.className = "inspector-entry"
     inspectorTitle.className = "inspector-title"
 
-    inspectorTitle.innerText = element.title
+    inspectorTitle.innerText = element
 
     inspectorEntry.appendChild(inspectorTitle)
 
-    if (element.type == "text") {
+    if (isColor(namespace[element])) {
+        let colorInput = document.createElement("input")
+        colorInput.type = "color"
+        
+        colorInput.value = namespace[element]
+
+        colorInput.addEventListener("change", () => {
+            namespace[element] = colorInput.value
+        })
+
+        inspectorEntry.appendChild(colorInput)
+    }
+    else if (typeof namespace[element] == "string") {
         let inspectorTextbox = document.createElement("input")
         inspectorTextbox.type = "text"
         inspectorTextbox.disabled = element.readonly
 
-        inspectorTextbox.value = namespace[element.value]
+        inspectorTextbox.value = namespace[element]
 
         inspectorTextbox.addEventListener("change", () => {
-            namespace[element.value] = inspectorTextbox.value
+            namespace[element] = inspectorTextbox.value
+            updateSceneList()
         })
 
         inspectorEntry.appendChild(inspectorTextbox)
     }
-    else if (element.type == "vector") {
+    else if (namespace[element] instanceof Vec2) {
         let boxWrapper = document.createElement("span")
         let boxX = document.createElement("input")
         let boxY = document.createElement("input")
 
         boxWrapper.className = "inspector-vector-wrapper"
 
-        boxX.value = namespace[element.value].x
-        boxY.value = namespace[element.value].y
+        boxX.value = namespace[element].x
+        boxY.value = namespace[element].y
 
         boxX.type = "text"
         boxY.type = "text"
@@ -111,48 +125,38 @@ function addInspectorEntry(element, namespace, toAdd) {
         boxWrapper.appendChild(boxY)
 
         boxX.addEventListener("change", () => {
-            namespace[element.value].x = parseFloat(boxX.value) || 0
+            namespace[element].x = parseFloat(boxX.value) || 0
         })
 
         boxY.addEventListener("change", () => {
-            namespace[element.value].y = parseFloat(boxY.value) || 0
+            namespace[element].y = parseFloat(boxY.value) || 0
         })
 
         inspectorEntry.appendChild(boxWrapper)
     }
-    else if (element.type == "num") {
+    else if (typeof namespace[element] == "number") {
         let numBox = document.createElement("input")
         numBox.type = "text"
 
-        numBox.value = namespace[element.value]
+        numBox.value = namespace[element]
 
         numBox.addEventListener("change", () => {
-            namespace[element.value] = parseFloat(numBox.value) || 0
+            namespace[element] = parseFloat(numBox.value) || 0
         })
 
         inspectorEntry.appendChild(numBox)
-    }
-    else if (element.type == "color") {
-        let colorInput = document.createElement("input")
-        colorInput.type = "color"
-        
-        colorInput.value = namespace[element.value]
-
-        colorInput.addEventListener("change", () => {
-            namespace[element.value] = colorInput.value
-        })
-
-        inspectorEntry.appendChild(colorInput)
     }
 
     toAdd.appendChild(inspectorEntry)
 }
 
 function updateInspector() {
-    document.getElementById("main-inspector").innerHTML = '<span class="window-title">Inspector</span>'
+    document.getElementById("inspector-wrapper").innerHTML = ''
+
+    if (!selectedScenesMenuObject) return
 
     for (const element of selectedScenesMenuObject.inspectorElements) {
-        addInspectorEntry(element, selectedScenesMenuObject, document.getElementById("main-inspector"))
+        addInspectorEntry(element, selectedScenesMenuObject, document.getElementById("inspector-wrapper"))
     }
 
     for (const component of selectedScenesMenuObject.components) {
@@ -163,12 +167,23 @@ function updateInspector() {
         inspectorComponentWrapperTitle.innerText = component.name
         
         inspectorComponentWrapper.appendChild(inspectorComponentWrapperTitle)
-        document.getElementById("main-inspector").appendChild(inspectorComponentWrapper)
+        document.getElementById("inspector-wrapper").appendChild(inspectorComponentWrapper)
+
+        let removeComponent = document.createElement("span")
+        removeComponent.className = "bi bi-trash-fill error"
+        removeComponent.style.float = "right"
+
+        removeComponent.addEventListener("click", () => {
+            selectedScenesMenuObject.removeComponent(component)
+            updateInspector()
+        })
+
+        inspectorComponentWrapper.appendChild(removeComponent)
 
         if (!component.inspector) continue
 
         for (const element of component.inspector) {
-            addInspectorEntry(element, component.body, inspectorComponentWrapper)
+            addInspectorEntry(element, component, inspectorComponentWrapper)
         }
     }
 }
@@ -209,6 +224,11 @@ function updateSceneList() {
             sceneEntry.appendChild(sceneEntryText)
 
             sceneEntry.className = "scene-entry"
+
+            if (object == selectedScenesMenuObject) {
+                selectedScenesMenu = sceneEntry
+                sceneEntry.style.backgroundColor = "rgba(64, 64, 255, 80%)"
+            }
 
             sceneEntry.onJJSContext = () => {
                 if (selectedScenesMenu) {
@@ -278,8 +298,17 @@ function updateComponents() {
         componentWrapper.appendChild(componentIcon)
         componentWrapper.appendChild(componentTitle)
 
-        componentTitle.innerText = component.name
+        componentTitle.innerText = component.parsedValue.name || "Untitled"
         componentIcon.className = "bi bi-file-earmark-code"
+
+        if (component.error) {
+            componentWrapper.style.backgroundColor =  "rgba(255, 64, 64, 80%)"  
+        }
+
+        if (component == selectedComponentObject) {
+            selectedComponent = componentWrapper
+            componentWrapper.style.backgroundColor = component.error ? "rgba(255, 128, 255)" : "rgba(64, 64, 255, 80%)"
+        }
 
         componentWrapper.addEventListener("click", () => {
             if (selectedComponent) {
@@ -317,7 +346,7 @@ function updateComponents() {
 }
 
 function createComponent() {
-    rawComponents.push({name: "New Component", value: '({\n\tname: "MyComponent",\n\tbody: {\n\t\tstart() {\n\t\t\t\n\t\t},\n\t\tupdate() {\n\t\t\t\n\t\t}\n\t}\n})'})
+    rawComponents.push({value: '({\n\tname: "MyComponent",\n\tstart() {\n\t\t\t\n\t},\n\tupdate() {\n\t\t\t\n\t}\n})', parsedValue: {name: "MyComponent", start(){}, update(){}}, error: false})
     updateComponents()
 }
 
@@ -337,14 +366,23 @@ require(['vs/editor/editor.main'], function () {
     document.getElementById("c").style.display = "none"
 
     window.editor = monaco.editor.create(document.getElementById('codespace'), {
-        value: '({\n\tname: "MyComponent",\n\tbody: {\n\t\tstart() {\n\t\t\t\n\t\t},\n\t\tupdate() {\n\t\t\t\n\t\t}\n\t}\n})',
         language: 'javascript',
         theme: 'vs-dark',
         automaticLayout: true
     });
 
     window.editor.getModel().onDidChangeContent(() => {
-        selectedComponentObject.value =  window.editor.getValue()
+        selectedComponentObject.value = window.editor.getValue()
+        selectedComponentObject.error = false
+
+        try {
+            selectedComponentObject.parsedValue = eval(selectedComponentObject.value)
+        } catch {
+            selectedComponentObject.error = true
+        }
+
+        updateComponents()
+        updateInspector()
     })
 
     document.getElementById('codespace').style.display = "none"
