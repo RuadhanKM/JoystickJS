@@ -4,6 +4,14 @@ class Vec2 {
         this.y = _y
     }
 
+    toString() {
+        return `${this.x},${this.y}`
+    }
+
+    static fromString(string) {
+        return new Vec2(...string.split(','))
+    }
+
     mag() {
         return (this.x**2 + this.y**2)**0.5
     }
@@ -31,10 +39,10 @@ class JJS_Object {
         this.children = []
         this.parent.children.push(this)
         this.sceneMenuCollapsed = false
-        this.name = "New Object"
+        this.Name = "New Object"
 
         this.inspectorElements = [
-            "name"
+            "Name"
         ]
 
         this.components = []
@@ -64,7 +72,6 @@ class JJS_Object {
         let out = []
 
         function a(children) {
-            depth++
             for (const child of children) {
                 out.push(child)
                 a(child.children)
@@ -97,7 +104,7 @@ class JJS_Object {
     }
 }
 
-const game = new JJS_Object({children: []})
+var game = new JJS_Object({children: []})
 const workspace = new JJS_Object(game)
 
 workspace.inspectorElements[0].readonly = true
@@ -121,31 +128,16 @@ class JJS_Group extends JJS_Object {
 }
 
 class JJS_Rect extends JJS_Object {
-    constructor(_pos, _size, _parent=workspace) {
+    constructor(_parent=workspace) {
         super(_parent)
         this.class = OBJECT_TYPE_RECT
         this.name = "New Rect"
     }
 }
 
-class JJS_Sprite extends JJS_Rect {
-    constructor(_pos, _size, _img, _parent=workspace) {
-        super(_pos, _size, _parent)
-        this.img = _img
-        this.class = OBJECT_TYPE_SPRITE
-        this.name = "New Sprite"
-
-        this.inspectorElements.push({
-            type: "text",
-            title: "Sprite URL",
-            value: "img"
-        })
-    }
-}
-
 class JJS_Cam extends JJS_Rect {
-    constructor(_pos, _size, _parent=workspace) {
-        super(_pos, _size, _parent)
+    constructor(_parent=workspace) {
+        super(_parent)
         this.class = OBJECT_TYPE_CAM
         this.name = "New Cam"
     }

@@ -1,11 +1,130 @@
-const componentTransform = {
-    name: "Transform",
-    Pos: new Vec2(),
-    Size: new Vec2(),
-    Rot: 0,
-    inspector: [
-        "Pos",
-        "Size",
-        "Rot"
-    ]
+const componentMenuItems = [
+    {
+        content: `New Component`, 
+        events: {
+            click: createComponent
+        }
+    }
+]
+
+const componentSelectMenuItems = [
+    {
+        content: `Add to selected object`,
+        events: {
+            click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(selectedComponentObject.parsedValue); updateInspector()}
+        }
+    }
+]
+
+new ContextMenu({
+    target: "#components-wrapper",
+    menuItems: componentMenuItems
+}).init()
+
+const rawComponents = []
+var selectedComponent
+var selectedComponentObject
+
+function updateComponents() {
+    document.getElementById("components-wrapper").innerHTML = ""
+
+    for (const component of rawComponents) {
+        let componentWrapper = document.createElement("div")
+        let componentIcon = document.createElement("h1")
+        let componentTitle = document.createElement("div")
+
+        componentWrapper.className = "component"
+
+        componentWrapper.appendChild(componentIcon)
+        componentWrapper.appendChild(componentTitle)
+
+        componentTitle.innerText = component.parsedValue.name || "Untitled"
+        componentIcon.className = "bi bi-file-earmark-code"
+
+        if (component.error) {
+            componentWrapper.style.backgroundColor =  "rgba(255, 64, 64, 80%)"  
+        }
+
+        if (component == selectedComponentObject) {
+            selectedComponent = componentWrapper
+            componentWrapper.style.backgroundColor = component.error ? "rgba(255, 128, 255)" : "rgba(64, 64, 255, 80%)"
+        }
+
+        componentWrapper.addEventListener("click", () => {
+            if (selectedComponent) {
+                selectedComponent.style.backgroundColor = ""
+            }
+
+            selectedComponent = componentWrapper
+            selectedComponentObject = component
+
+            window.editor.getModel().setValue(component.value)
+
+            componentWrapper.style.backgroundColor = "rgba(64, 64, 255, 80%)"            
+        })
+
+        componentWrapper.onJJSContext = () => {
+            if (selectedComponent) {
+                selectedComponent.style.backgroundColor = ""
+            }
+
+            window.editor.getModel().setValue(component.value)
+
+            selectedComponent = componentWrapper
+            selectedComponentObject = component
+
+            componentWrapper.style.backgroundColor = "rgba(64, 64, 255, 80%)"  
+        }
+
+        document.getElementById("components-wrapper").appendChild(componentWrapper)
+    }
+
+    new ContextMenu({
+        target: ".component",
+        menuItems: componentSelectMenuItems
+    }).init()
 }
+
+function createComponent() {
+    rawComponents.push({value: '({\n\tname: "MyComponent",\n\tstart() {\n\t\t\n\t},\n\tupdate() {\n\t\t\n\t}\n})', parsedValue: {name: "MyComponent", start(){}, update(){}}, error: false})
+    updateComponents()
+}
+
+var inCodeMode = false
+
+function toggleCodeMode() {
+    inCodeMode = !inCodeMode && selectedComponentObject
+
+    document.getElementById("c").style.display = inCodeMode ? "none" : "unset"
+    document.getElementById("codespace").style.display = inCodeMode ? "unset" : "none"
+}
+
+require.config({ paths: { vs: 'monaco-editor/min/vs' } });
+require(['vs/editor/editor.main'], function () {
+    document.getElementById("c").style.display = "none"
+
+    window.editor = monaco.editor.create(document.getElementById('codespace'), {
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true
+    });
+
+    window.editor.getModel().onDidChangeContent(() => {
+        if (!selectedComponentObject) return
+
+        selectedComponentObject.value = window.editor.getValue()
+        selectedComponentObject.error = false
+
+        try {
+            selectedComponentObject.parsedValue = eval(selectedComponentObject.value)
+        } catch {
+            selectedComponentObject.error = true
+        }
+
+        updateComponents()
+        updateInspector()
+    })
+
+    document.getElementById('codespace').style.display = "none"
+    document.getElementById("c").style.display = "unset"
+});

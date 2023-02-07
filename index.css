@@ -1,3 +1,7 @@
+body {
+    overflow: hidden;
+}
+
 #main-viewport {
     position: absolute;
     width: 70%;
@@ -85,6 +89,7 @@
     border: 0;
     margin: 0.1em;
     font-family: monospace;
+    color: white;
 }
 
 .window-title {
