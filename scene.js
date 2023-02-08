@@ -34,15 +34,15 @@ const sceneMenuItems = [
 
 function addSceneObject(object) {
     if (object instanceof JJS_Cam) {
-        object.addComponent(componentTransform)
-        object.addComponent(componentCamera)
+        object.addComponent(componentTransform.parsedValue)
+        object.addComponent(componentCamera.parsedValue)
     }
     else if (object instanceof JJS_Group) {
-        object.addComponent(componentTransform)
+        object.addComponent(componentTransform.parsedValue)
     }
     else if (object instanceof JJS_Rect) {
-        object.addComponent(componentTransform)
-        object.addComponent(componentRenderer)
+        object.addComponent(componentTransform.parsedValue)
+        object.addComponent(componentRenderer.parsedValue)
     }
     
     updateSceneList()
@@ -81,7 +81,7 @@ function updateSceneList() {
             }
 
             let sceneEntryText = document.createElement("span")
-            sceneEntryText.innerText = object.name
+            sceneEntryText.innerText = object.Name
             sceneEntryText.id = "sceneEntryText"
 
             sceneEntry.appendChild(sceneEntryText)
@@ -138,5 +138,3 @@ function updateSceneList() {
 
     sceneEntryMenu.init()
 }
-
-updateSceneList()

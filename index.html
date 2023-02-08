@@ -11,8 +11,10 @@
     <body>
         
         <div id="main-controls">
-            <button class="success bi bi-play-fill" onclick="playClick()"></button>
+            <button class="success bi bi-play-fill" onclick="playClick()" id="play-button"></button>
             <button class="bi bi-code-slash" onclick="toggleCodeMode()"></button>
+            <button class="bi bi-download" onclick="download('game.jjs', serializeGameState())"></button>
+            <button class="bi bi-upload" onclick="upload()"></button>
         </div>
         <div id="main-viewport">
             <canvas id="c" width="1280" height="720"></canvas>

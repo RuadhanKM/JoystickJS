@@ -1,25 +1,7 @@
 function serializeGameState() {
     let out = ""
 
-    let serComps = []
-    for (const comp of rawComponents) {
-        let tempCompOut = ""
-
-        tempCompOut += btoa(toBinary(comp.value))
-
-        tempCompOut += "@"
-
-        if (comp.parsedValue.inspector) {
-            for (const insp of comp.parsedValue.inspector) {
-                if (!comp.parsedValue[insp]) continue
-                tempCompOut += JJStypeof(comp.parsedValue[insp]) + "#" + btoa(toBinary(insp)) + "#" + btoa(toBinary(comp.parsedValue[insp].toString()))
-            }
-        }
-
-        serComps.push(tempCompOut)
-    }
-
-    out += serComps.join(" ")
+    out += rawComponents.map(x => btoa(toBinary(x.value))).join(" ")
 
     out += "\n"
 
@@ -33,17 +15,19 @@ function serializeGameState() {
             id++
             child.id = id
  
-            tempObjOut += id + "@" + JJStypeof(child) + "@" + child.parent.id + "@"
+            tempObjOut += id + "@" + JJStypeof(child) + "@" + btoa(toBinary(child.Name)) + "@" + (child == selectedScenesMenuObject) + "@" + child.sceneMenuCollapsed + "@" + child.parent.id + "@"
 
-            for (const insp of child.inspectorElements) {
-                tempObjOut += JJStypeof(child[insp]) + "#" + insp + "#" + btoa(toBinary(child[insp]))
-            }
-            
-            tempObjOut += "@"
+            let tempComps = []
+            for (const comp of child.components) {
+                let tempCompsOut = ""
 
-            for (const comp of child.components.filter(a => !defaultComponents.includes(a))) {
-                tempObjOut += btoa(toBinary(comp.name)) + "#"
+                tempCompsOut += btoa(toBinary(comp.JJS_Name)) + "<"
+
+                tempCompsOut += comp.inspector.map(insp => btoa(toBinary(insp)) + "#" + btoa(toBinary(comp[insp].toString()))).join(".")
+
+                tempComps.push(tempCompsOut)
             }
+            tempObjOut += tempComps.join(">")
 
             serObjs.push(tempObjOut)
 
@@ -69,13 +53,61 @@ function deserializeGameState(gameState) {
     let objSplit = split0[1].split(" ")
 
     for (const compStr of compSplit) {
-        let rawValue = fromBinary(atob(compStr.split("@")[0]))
-        let inspectorElements = compStr.split("@")[1].split("#")
+        let value = fromBinary(atob(compStr))
+        let parsedValue = eval(`(${value})`)
 
-        let value = eval(rawValue)
-
-        value[fromBinary(atob(inspectorElements[1]))] = new JJSFromString(inspectorElements[0])()
+        outRawComps[parsedValue.name] = {value: value, parsedValue: parsedValue, error: false}
     }
 
-    return out
+    let idObjects = {0: out}
+
+    for (const obj of objSplit) {
+        let objData1 = obj.split("@")
+
+        let id = objData1[0]
+        let objType = objData1[1]
+        let name = fromBinary(atob(objData1[2]))
+        let sceneSelected = objData1[3] == "true"
+        let sceneMenuCollapsed = objData1[4]
+        let parentId = objData1[5]
+        let comps = objData1[6].split(">")
+
+        let objInst = new (JJSFromString(objType))({children: []})
+        objInst.Name = name
+        objInst.sceneMenuCollapsed = sceneMenuCollapsed == "true"
+        objInst.id = id
+        objInst.parent = idObjects[parentId]
+        objInst.parent.children.push(objInst)
+
+        if (sceneSelected) selectedScenesMenuObject = objInst
+
+        idObjects[id] = objInst
+
+        for (const comp of comps) {
+            let compData1 = comp.split("<")
+
+            if (!compData1[0]) continue 
+
+            let insps = compData1?.[1]?.split(".") || []
+
+            let compClass = outRawComps[fromBinary(atob(compData1[0]))].parsedValue
+
+            objInst.addComponent(compClass)
+
+            for (const insp of insps) {
+                let inspData1 = insp.split("#")
+                let inspName = fromBinary(atob(inspData1[0]))
+
+                objInst[compClass.name][inspName] = stringToVal(fromBinary(atob(inspData1[1])), JJStypeof(objInst[compClass.name][inspName]))
+            }
+        }
+    }
+
+    game = out
+    workspace = game.children[0]
+    rawComponents = Object.values(outRawComps)
+
+    updateComponents()
+    updateInspector()
+    updateSceneList()
 }

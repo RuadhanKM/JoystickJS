@@ -1,33 +1,44 @@
-const componentTransform = {
-    name: "Transform",
-    Pos: new Vec2(),
-    Size: new Vec2(),
-    Rot: 0,
-    inspector: [
-        "Pos",
-        "Size",
-        "Rot"
-    ]
+function addDefaultComponent(value) {
+    let a = {value: value, parsedValue: eval("(" + value + ")"), error: false}
+
+    rawComponents.push(a)
+
+    return a
 }
 
-const componentRenderer = {
-    name: "Renderer",
-    Color: "rgba(255,255,255,1)",
-    inspector: [
-        "Color"
-    ]
-}
+const componentTransform = addDefaultComponent(
+`class Transform {
+    constructor() {
+        this.Pos = new Vec2()
+        this.Size = new Vec2()
+        this.Rot = 0
 
-const componentCamera = {
-    name: "Camera",
-    renderToScreen: false,
-    inspector: [
-        "renderToScreen"
-    ]
-}
+        this.inspector = [
+            "Pos",
+            "Size",
+            "Rot"
+        ]
+    }
+}`)
 
-var defaultComponents = [
-    componentTransform,
-    componentRenderer,
-    componentCamera
-]
+const componentRenderer = addDefaultComponent(
+`class Renderer {
+    constructor() {
+        this.Color = "rgba(255, 255, 255, 1)"
+
+        this.inspector = [
+            "Color"
+        ]
+    }
+}`)
+
+const componentCamera = addDefaultComponent(
+`class Camera {
+    constructor() {
+        this.renderToScreen = false
+
+        this.inspector = [
+            "renderToScreen"
+        ]
+    }
+}`)

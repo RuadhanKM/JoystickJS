@@ -5,13 +5,17 @@ ctx.fillRect(0, 0, 1280, 720)
 var tick = 0
 var playing = false
 
+var lastGameState
+
 function playClick() {
-    playing ? stop() : start()
+    playing ? (playing = false) : start()
+    document.getElementById("play-button").className = playing ? "error bi bi-stop-fill" : "success bi bi-play-fill"
 }
 
 function start() {
     tick = 0
     playing = true
+    lastGameState = serializeGameState()
 
     if (inCodeMode) toggleCodeMode()
 
@@ -25,7 +29,7 @@ function start() {
 }
 
 function stop() {
-    playing = false
+    deserializeGameState(lastGameState)
 }
 
 function loop() {
@@ -34,8 +38,10 @@ function loop() {
     for (const obj of game.getDecendents()) {
         for (const comp of obj.components) {
             comp.update?.()
+            updateInspector()
+            updateSceneList()
         }
     }
 
-    if (playing) requestAnimationFrame(loop)
+    playing ? requestAnimationFrame(loop) : stop()
 }

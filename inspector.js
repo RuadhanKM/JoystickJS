@@ -103,7 +103,7 @@ function updateInspector() {
         inspectorComponentWrapper.className = "inspector-entry"
         
         let inspectorComponentWrapperTitle = document.createElement("span")
-        inspectorComponentWrapperTitle.innerText = component.name
+        inspectorComponentWrapperTitle.innerText = component.JJS_Name
         
         inspectorComponentWrapper.appendChild(inspectorComponentWrapperTitle)
         document.getElementById("inspector-wrapper").appendChild(inspectorComponentWrapper)

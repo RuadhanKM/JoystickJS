@@ -21,7 +21,7 @@ new ContextMenu({
     menuItems: componentMenuItems
 }).init()
 
-const rawComponents = []
+var rawComponents = []
 var selectedComponent
 var selectedComponentObject
 
@@ -86,7 +86,7 @@ function updateComponents() {
 }
 
 function createComponent() {
-    rawComponents.push({value: '({\n\tname: "MyComponent",\n\tstart() {\n\t\t\n\t},\n\tupdate() {\n\t\t\n\t}\n})', parsedValue: {name: "MyComponent", start(){}, update(){}}, error: false})
+    rawComponents.push({value: 'class MyComponent {\n\tconstructor() {\n\t\t\n\t}\n\tstart() {\n\t\t\n\t}\n\tupdate() {\n\t\t\n\t}\n}', parsedValue: class MyComponent {constructor(){}start(){}update(){}}, error: false})
     updateComponents()
 }
 
@@ -116,7 +116,8 @@ require(['vs/editor/editor.main'], function () {
         selectedComponentObject.error = false
 
         try {
-            selectedComponentObject.parsedValue = eval(selectedComponentObject.value)
+            selectedComponentObject.parsedValue = eval("(" + selectedComponentObject.value + ")")
+            new (selectedComponentObject.parsedValue)()
         } catch {
             selectedComponentObject.error = true
         }

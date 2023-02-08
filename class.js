@@ -9,7 +9,7 @@ class Vec2 {
     }
 
     static fromString(string) {
-        return new Vec2(...string.split(','))
+        return new Vec2(...string.split(',').map(parseFloat))
     }
 
     mag() {
@@ -54,17 +54,21 @@ class JJS_Object {
             return
         }
 
-        this[component.name] = component
-        this.components.push(component)
+        let a = new (component)()
+
+        a.JJS_Name = component.name
+
+        this[component.name] = a
+        this.components.push(a)
     }
 
     removeComponent(component) {
-        if (!this[component.name]) {
-            console.warn(`Component with name ${component.name} doesn't exsist on this object!`)
+        if (!this[component.JJS_Name]) {
+            console.warn(`Component with name ${component.JJS_Name} doesn't exsist on this object!`)
             return
         }
 
-        delete this[component.name]
+        delete this[component.JJS_Name]
         this.components.splice(this.components.indexOf(component), 1)
     }
 
@@ -105,17 +109,14 @@ class JJS_Object {
 }
 
 var game = new JJS_Object({children: []})
-const workspace = new JJS_Object(game)
-
-workspace.inspectorElements[0].readonly = true
-
-workspace.name = "Workspace"
+var workspace = new JJS_Object(game)
+workspace.Name = "Workspace"
 
 class JJS_Folder extends JJS_Object {
     constructor(_parent=workspace) {
         super(_parent)
         this.class = OBJECT_TYPE_FOLDER
-        this.name = "New Folder"
+        this.Name = "New Folder"
     }
 }
 
@@ -123,7 +124,7 @@ class JJS_Group extends JJS_Object {
     constructor(_parent=workspace) {
         super(_parent)
         this.class = OBJECT_TYPE_GROUP
-        this.name = "New Group"
+        this.Name = "New Group"
     }
 }
 
@@ -131,7 +132,7 @@ class JJS_Rect extends JJS_Object {
     constructor(_parent=workspace) {
         super(_parent)
         this.class = OBJECT_TYPE_RECT
-        this.name = "New Rect"
+        this.Name = "New Rect"
     }
 }
 
@@ -139,12 +140,6 @@ class JJS_Cam extends JJS_Rect {
     constructor(_parent=workspace) {
         super(_parent)
         this.class = OBJECT_TYPE_CAM
-        this.name = "New Cam"
+        this.Name = "New Cam"
     }
-}
-
-const isColor = (strColor) => {
-    const s = new Option().style
-    s.color = strColor
-    return s.color !== ''
 }
