@@ -48,6 +48,11 @@ class JJS_Object {
         this.components = []
     }
 
+    destroy() {
+        this.parent.children.splice(this.parent.children.indexOf(this), 1)
+        this.parent = undefined
+    }
+
     addComponent(component) {
         if (this[component.name]) {
             console.warn(`Component with name ${component.name} already exsists on this object!`)
@@ -103,7 +108,7 @@ class JJS_Object {
 
     findFirstChild(childName) {
         for (const child of this.children) {
-            if (child.name == childName) return child
+            if (child.Name == childName) return child
         }
     }
 }

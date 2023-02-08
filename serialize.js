@@ -23,7 +23,7 @@ function serializeGameState() {
 
                 tempCompsOut += btoa(toBinary(comp.JJS_Name)) + "<"
 
-                tempCompsOut += comp.inspector.map(insp => btoa(toBinary(insp)) + "#" + btoa(toBinary(comp[insp].toString()))).join(".")
+                tempCompsOut += (comp?.inspector || []).map(insp => btoa(toBinary(insp)) + "#" + btoa(toBinary(comp[insp].toString()))).join(".")
 
                 tempComps.push(tempCompsOut)
             }
@@ -88,11 +88,13 @@ function deserializeGameState(gameState) {
 
             if (!compData1[0]) continue 
 
-            let insps = compData1?.[1]?.split(".") || []
-
             let compClass = outRawComps[fromBinary(atob(compData1[0]))].parsedValue
 
             objInst.addComponent(compClass)
+
+            if (!compData1[1]) continue
+
+            let insps = compData1[1].split(".")
 
             for (const insp of insps) {
                 let inspData1 = insp.split("#")

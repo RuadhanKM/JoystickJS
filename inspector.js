@@ -76,14 +76,20 @@ function addInspectorEntry(element, namespace, toAdd) {
     else if (typeof namespace[element] == "boolean") {
         let checkBox = document.createElement("input")
         checkBox.type = "checkbox"
+        inspectorTitle.classList.add("checkable")
+        let picnicLabel = document.createElement("label")
 
-        checkBox.value = namespace[element]
+
+        checkBox.checked = namespace[element]
 
         checkBox.addEventListener("change", () => {
-            namespace[element] = checkBox.value
+            namespace[element] = checkBox.checked
         })
 
-        inspectorEntry.appendChild(checkBox)
+        picnicLabel.append(checkBox)
+        picnicLabel.append(inspectorTitle)
+
+        inspectorEntry.append(picnicLabel)
     }
 
     toAdd.appendChild(inspectorEntry)

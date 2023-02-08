@@ -21,6 +21,7 @@ function start() {
 
     for (const obj of game.getDecendents()) {
         for (const comp of obj.components) {
+            comp.object = obj
             comp.start?.()
         }
     }
