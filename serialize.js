@@ -1,7 +1,7 @@
 function serializeGameState() {
     let out = ""
 
-    out += rawComponents.map(x => btoa(toBinary(x.value))).join(" ")
+    out += rawComponents.map(x => btoa(toBinary(x.value)) + "@" + btoa(toBinary(selectedComponentObject?.parsedValue?.name || ""))).join(" ")
 
     out += "\n"
 
@@ -21,9 +21,9 @@ function serializeGameState() {
             for (const comp of child.components) {
                 let tempCompsOut = ""
 
-                tempCompsOut += btoa(toBinary(comp.JJS_Name)) + "<"
+                tempCompsOut += btoa(toBinary(comp.parsedValue.name)) + "<"
 
-                tempCompsOut += (comp?.inspector || []).map(insp => btoa(toBinary(insp)) + "#" + btoa(toBinary(comp[insp].toString()))).join(".")
+                tempCompsOut += (child[comp.parsedValue.name]?.inspector || []).map(insp => btoa(toBinary(insp)) + "#" + btoa(toBinary(child[comp.parsedValue.name][insp].toString()))).join(".")
 
                 tempComps.push(tempCompsOut)
             }
@@ -53,10 +53,17 @@ function deserializeGameState(gameState) {
     let objSplit = split0[1].split(" ")
 
     for (const compStr of compSplit) {
-        let value = fromBinary(atob(compStr))
+        let value = fromBinary(atob(compStr.split("@")[0]))
+        let selectedCompName = fromBinary(atob(compStr.split("@")[1] || ""))
         let parsedValue = eval(`(${value})`)
 
-        outRawComps[parsedValue.name] = {value: value, parsedValue: parsedValue, error: false}
+        outRawComps[parsedValue.name] = {value: value, parsedValue: parsedValue, error: false, objects: []}
+
+        if (!selectedCompName) continue
+        if (selectedCompName == parsedValue.name) {
+            selectedComponentObject = outRawComps[parsedValue.name]
+            window.editor.getModel().setValue(selectedComponentObject.value)
+        }
     }
 
     let idObjects = {0: out}
@@ -83,14 +90,15 @@ function deserializeGameState(gameState) {
 
         idObjects[id] = objInst
 
-        for (const comp of comps) {
-            let compData1 = comp.split("<")
+        for (const encComp of comps) {
+            let compData1 = encComp.split("<")
 
             if (!compData1[0]) continue 
 
-            let compClass = outRawComps[fromBinary(atob(compData1[0]))].parsedValue
+            let comp = outRawComps[fromBinary(atob(compData1[0]))]
+            comp.objects.push(objInst)
 
-            objInst.addComponent(compClass)
+            objInst.addComponent(comp)
 
             if (!compData1[1]) continue
 
@@ -100,7 +108,7 @@ function deserializeGameState(gameState) {
                 let inspData1 = insp.split("#")
                 let inspName = fromBinary(atob(inspData1[0]))
 
-                objInst[compClass.name][inspName] = stringToVal(fromBinary(atob(inspData1[1])), JJStypeof(objInst[compClass.name][inspName]))
+                objInst[comp.parsedValue.name][inspName] = stringToVal(fromBinary(atob(inspData1[1])), JJStypeof(objInst[comp.parsedValue.name][inspName]))
             }
         }
     }

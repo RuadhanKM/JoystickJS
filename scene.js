@@ -26,7 +26,7 @@ const sceneMenuItems = [
     {
         content: `Delete`,
         events: {
-            click: () => {selectedScenesMenuObject.parent.children.splice(selectedScenesMenuObject.parent.children.indexOf(selectedScenesMenuObject), 1); selectedScenesMenu = undefined; selectedScenesMenuObject = undefined; updateSceneList(); updateInspector()}
+            click: () => {selectedScenesMenuObject.destroy(); selectedScenesMenuObject = undefined; updateSceneList(); updateInspector()}
         },
         divider: `top`
     }
@@ -34,15 +34,17 @@ const sceneMenuItems = [
 
 function addSceneObject(object) {
     if (object instanceof JJS_Cam) {
-        object.addComponent(componentTransform.parsedValue)
-        object.addComponent(componentCamera.parsedValue)
+        object.addComponent(componentTransform)
+        object.addComponent(componentCamera)
     }
     else if (object instanceof JJS_Group) {
-        object.addComponent(componentTransform.parsedValue)
+        object.addComponent(componentTransform)
     }
     else if (object instanceof JJS_Rect) {
-        object.addComponent(componentTransform.parsedValue)
-        object.addComponent(componentRenderer.parsedValue)
+        object.addComponent(componentTransform)
+        object.addComponent(componentRenderer)
+
+        object.Transform.Size = new Vec2(20, 20)
     }
     
     updateSceneList()

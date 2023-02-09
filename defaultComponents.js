@@ -1,5 +1,5 @@
 function addDefaultComponent(value) {
-    let a = {value: value, parsedValue: eval("(" + value + ")"), error: false}
+    let a = {value: value, parsedValue: eval("(" + value + ")"), error: false, objects: []}
 
     rawComponents.push(a)
 
@@ -24,11 +24,27 @@ const componentTransform = addDefaultComponent(
 const componentRenderer = addDefaultComponent(
 `class Renderer {
     constructor() {
-        this.Color = "rgba(255, 255, 255, 1)"
+        this.Color = "#FFFFFF"
 
         this.inspector = [
             "Color"
         ]
+    }
+    render() {
+        ctx.translate(
+            (this.object?.Transform?.Pos?.x || 0), 
+            (this.object?.Transform?.Pos?.y || 0)
+        )
+        ctx.rotate(this.object?.Transform?.Rot || 0)
+
+        ctx.fillStyle = this.Color
+
+        ctx.fillRect(
+            -(this.object?.Transform?.Size?.x/2 || 0),
+            -(this.object?.Transform?.Size?.y/2 || 0),
+            (this.object?.Transform?.Size?.x || 0),
+            (this.object?.Transform?.Size?.y || 0),
+        )
     }
 }`)
 

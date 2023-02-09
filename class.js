@@ -16,9 +16,9 @@ class Vec2 {
         return (this.x**2 + this.y**2)**0.5
     }
 
-    norm() {
+    norm(s=1) {
         let invMag = 1/this.mag()
-        return new Vec2(this.x*invMag, this.y*invMag)
+        return new Vec2(this.x*invMag*s, this.y*invMag*s)
     }
 
     dot (o) {
@@ -31,6 +31,13 @@ class Vec2 {
     div(o) {return new Vec2(this.x / o.x, this.y / o.y)}
     mulS(s) {return new Vec2(this.x * s, this.y * s)}
     divS(s) {return new Vec2(this.x / s, this.y / s)}
+
+    madd(o) {this.x += o.x; this.y += o.y}
+    msub(o) {this.x -= o.x; this.y -= o.y}
+    mmul(o) {this.x *= o.x; this.y *= o.y}
+    mdiv(o) {this.x /= o.x; this.y /= o.y}
+    mmulS(s) {this.x *= s; this.y *= s}
+    mdivS(s) {this.x /= s; this.y /= s}
 }
 
 class JJS_Object {
@@ -51,20 +58,27 @@ class JJS_Object {
     destroy() {
         this.parent.children.splice(this.parent.children.indexOf(this), 1)
         this.parent = undefined
+
+        for (const comp of this.components) {
+            comp.objects.splice(comp.objects.indexOf(this), 1)
+        }
     }
 
     addComponent(component) {
-        if (this[component.name]) {
-            console.warn(`Component with name ${component.name} already exsists on this object!`)
+        if (this[component.parsedValue.name]) {
+            console.warn(`Component with name ${component.parsedValue.name} already exsists on this object!`)
             return
         }
 
-        let a = new (component)()
+        let a = new (component.parsedValue)()
 
-        a.JJS_Name = component.name
+        a.JJS_Name = component.parsedValue.name
+        a.object = this
 
-        this[component.name] = a
-        this.components.push(a)
+        component.objects.push(this)
+
+        this[component.parsedValue.name] = a
+        this.components.push(component)
     }
 
     removeComponent(component) {

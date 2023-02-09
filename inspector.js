@@ -79,10 +79,11 @@ function addInspectorEntry(element, namespace, toAdd) {
         inspectorTitle.classList.add("checkable")
         let picnicLabel = document.createElement("label")
 
-
         checkBox.checked = namespace[element]
 
-        checkBox.addEventListener("change", () => {
+        picnicLabel.addEventListener("click", e => {
+            e.preventDefault()
+            checkBox.checked = !checkBox.checked
             namespace[element] = checkBox.checked
         })
 
@@ -104,7 +105,9 @@ function updateInspector() {
         addInspectorEntry(element, selectedScenesMenuObject, document.getElementById("inspector-wrapper"))
     }
 
-    for (const component of selectedScenesMenuObject.components) {
+    for (const rawComponent of selectedScenesMenuObject.components) {
+        let component = selectedScenesMenuObject[rawComponent.parsedValue.name]
+
         let inspectorComponentWrapper = document.createElement("div")
         inspectorComponentWrapper.className = "inspector-entry"
         

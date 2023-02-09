@@ -204,6 +204,7 @@ body {
 
 #inspector-wrapper {
     overflow-y: auto;
+    scrollbar-width: none;
 }
 
 #main-components {

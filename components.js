@@ -11,7 +11,7 @@ const componentSelectMenuItems = [
     {
         content: `Add to selected object`,
         events: {
-            click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(selectedComponentObject.parsedValue); updateInspector()}
+            click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(selectedComponentObject); updateInspector()}
         }
     }
 ]
@@ -86,14 +86,14 @@ function updateComponents() {
 }
 
 function createComponent() {
-    rawComponents.push({value: 'class MyComponent {\n\tconstructor() {\n\t\t\n\t}\n\tstart() {\n\t\t\n\t}\n\tupdate() {\n\t\t\n\t}\n}', parsedValue: class MyComponent {constructor(){}start(){}update(){}}, error: false})
+    rawComponents.push({value: 'class MyComponent {\n\tconstructor() {\n\t\t\n\t}\n\tstart() {\n\t\t\n\t}\n\tupdate() {\n\t\t\n\t}\n}', parsedValue: class MyComponent {constructor(){}start(){}update(){}}, error: false, objects: []})
     updateComponents()
 }
 
 var inCodeMode = false
 
 function toggleCodeMode() {
-    inCodeMode = !inCodeMode && selectedComponentObject
+    inCodeMode = !inCodeMode && selectedComponentObject && !playing
 
     document.getElementById("c").style.display = inCodeMode ? "none" : "unset"
     document.getElementById("codespace").style.display = inCodeMode ? "unset" : "none"
@@ -118,6 +118,21 @@ require(['vs/editor/editor.main'], function () {
         try {
             selectedComponentObject.parsedValue = eval("(" + selectedComponentObject.value + ")")
             new (selectedComponentObject.parsedValue)()
+
+            for (const obj of selectedComponentObject.objects) {
+                let a = new (selectedComponentObject.parsedValue)()
+
+                a.JJS_Name = selectedComponentObject.parsedValue.name
+                a.object = obj
+
+                for (const insp of a.inspector) {
+                    if (obj[selectedComponentObject.parsedValue.name][insp] && JJStypeof(obj[selectedComponentObject.parsedValue.name][insp]) == JJStypeof(a[insp])) {
+                        a[insp] = obj[selectedComponentObject.parsedValue.name][insp]
+                    }
+                }
+
+                obj[selectedComponentObject.parsedValue.name] = a
+            }
         } catch {
             selectedComponentObject.error = true
         }
