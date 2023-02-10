@@ -29,15 +29,15 @@ class Vec2 {
     sub(o) {return new Vec2(this.x - o.x, this.y - o.y)}
     mul(o) {return new Vec2(this.x * o.x, this.y * o.y)}
     div(o) {return new Vec2(this.x / o.x, this.y / o.y)}
-    mulS(s) {return new Vec2(this.x * s, this.y * s)}
-    divS(s) {return new Vec2(this.x / s, this.y / s)}
+    muls(s) {return new Vec2(this.x * s, this.y * s)}
+    divs(s) {return new Vec2(this.x / s, this.y / s)}
 
     madd(o) {this.x += o.x; this.y += o.y}
     msub(o) {this.x -= o.x; this.y -= o.y}
     mmul(o) {this.x *= o.x; this.y *= o.y}
     mdiv(o) {this.x /= o.x; this.y /= o.y}
-    mmulS(s) {this.x *= s; this.y *= s}
-    mdivS(s) {this.x /= s; this.y /= s}
+    mmuls(s) {this.x *= s; this.y *= s}
+    mdivs(s) {this.x /= s; this.y /= s}
 }
 
 class JJS_Object {

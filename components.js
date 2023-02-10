@@ -126,7 +126,7 @@ require(['vs/editor/editor.main'], function () {
                 a.object = obj
 
                 for (const insp of a.inspector) {
-                    if (obj[selectedComponentObject.parsedValue.name][insp] && JJStypeof(obj[selectedComponentObject.parsedValue.name][insp]) == JJStypeof(a[insp])) {
+                    if (obj[selectedComponentObject.parsedValue.name][insp] != undefined && JJStypeof(obj[selectedComponentObject.parsedValue.name][insp]) == JJStypeof(a[insp])) {
                         a[insp] = obj[selectedComponentObject.parsedValue.name][insp]
                     }
                 }

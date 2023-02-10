@@ -29,9 +29,11 @@ function renderScreen() {
                 ctx.scale(1, -1)
 
                 try {
-                    obj[comp.parsedValue.name].render()
+                    obj[comp.parsedValue.name].render?.()
                 } catch (e) {
                     console.error(e)
+                    playing = true
+                    playClick()
                 }
             }
         }
@@ -41,6 +43,7 @@ function renderScreen() {
 function playClick() {
     playing = !playing
     document.getElementById("play-button").className = playing ? "error bi bi-stop-fill" : "success bi bi-play-fill"
+    document.getElementById("play-button").blur()
 }
 
 function start() {
@@ -56,7 +59,13 @@ function start() {
 
     for (const obj of game.getDecendents()) {
         for (const comp of obj.components) {
-            obj[comp.parsedValue.name].start?.()
+            try {
+                obj[comp.parsedValue.name].start?.()
+            } catch (e) {
+                console.error(e)
+                playing = true
+                playClick()
+            }
         }
     }
 
@@ -86,9 +95,11 @@ function editorLoop() {
                 ctx.translate(canvas.width/2, canvas.height/2)
                 ctx.scale(1, -1)
                 try {
-                    obj[comp.parsedValue.name].editorRender()
+                    obj[comp.parsedValue.name].editorRender?.()
                 } catch (e) {
                     console.error(e)
+                    playing = true
+                    playClick()
                 }
             }
         }
@@ -102,7 +113,13 @@ function gameLoop() {
 
     for (const obj of game.getDecendents()) {
         for (const comp of obj.components) {
-            obj[comp.parsedValue.name].update?.()
+            try {
+                obj[comp.parsedValue.name].update?.()
+            } catch (e) {
+                console.error(e)
+                playing = true
+                playClick()
+            }
             if (tick % 10 == 0) {
                 updateInspector()
                 updateSceneList()

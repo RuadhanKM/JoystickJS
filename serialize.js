@@ -96,7 +96,6 @@ function deserializeGameState(gameState) {
             if (!compData1[0]) continue 
 
             let comp = outRawComps[fromBinary(atob(compData1[0]))]
-            comp.objects.push(objInst)
 
             objInst.addComponent(comp)
 
