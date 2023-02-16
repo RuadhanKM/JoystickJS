@@ -66,7 +66,7 @@ const componentCamera = addDefaultComponent(
         this.object?.Transform?.setCtxTransform?.(ctx)
 
         ctx.strokeStyle = "#ffffff"
-        ctx.lineWidth = 2
+        ctx.lineWidth = 2/editorZoom
         
         ctx.strokeRect(
             -this.object?.Transform?.Size?.x/2 || 0,
@@ -243,7 +243,7 @@ addDefaultComponent(
         ctx.rotate(-(this.object?.Transform?.Rot || 0))
 
         ctx.strokeStyle = "#00FF00"
-        ctx.lineWidth = 2
+        ctx.lineWidth = 2/editorZoom
 
         ctx.strokeRect(
             -this.Size.x/2,
