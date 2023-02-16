@@ -25,6 +25,10 @@ class Vec2 {
         return this.x*o.x + this.y*o.y
     }
 
+    lerp(b, t) {
+        return this.add((b.sub(this)).muls(t))
+    }
+
     add(o) {return new Vec2(this.x + o.x, this.y + o.y)}
     sub(o) {return new Vec2(this.x - o.x, this.y - o.y)}
     mul(o) {return new Vec2(this.x * o.x, this.y * o.y)}
@@ -82,12 +86,13 @@ class JJS_Object {
     }
 
     removeComponent(component) {
-        if (!this[component.JJS_Name]) {
-            console.warn(`Component with name ${component.JJS_Name} doesn't exsist on this object!`)
+        if (!this[component.parsedValue.name]) {
+            console.warn(`Component with name ${component.parsedValue.name} doesn't exsist on this object!`)
             return
         }
 
-        delete this[component.JJS_Name]
+        component.objects.splice(component.objects.indexOf(this), 1)
+        delete this[component.parsedValue.name]
         this.components.splice(this.components.indexOf(component), 1)
     }
 
@@ -122,7 +127,13 @@ class JJS_Object {
 
     findFirstChild(childName) {
         for (const child of this.children) {
-            if (child.Name == childName) return child
+            if (child.Name == childName) return child 
+        }
+    }
+
+    findFirstDecendent(decendentName) {
+        for (const descendent of this.getDecendents()) {
+            if (descendent.Name == decendentName) return descendent
         }
     }
 }

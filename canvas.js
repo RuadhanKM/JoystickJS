@@ -16,27 +16,63 @@ function addEvent(event, func) {
     events.push([event, func])
 }
 
+var editorKeys = {}
+document.addEventListener("keydown", e => editorKeys[e.key] = true)
+document.addEventListener("keyup", e => editorKeys[e.key] = false)
+
+var editorPos = new Vec2()
+var editorZoom = 1
+
 function renderScreen() {
     ctx.resetTransform()
     ctx.fillStyle = "black"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    for (const obj of game.getDecendents()) {
-        for (const comp of obj.components) {
-            if (obj[comp.parsedValue.name].render) {
-                ctx.resetTransform()
-                ctx.translate(canvas.width/2, canvas.height/2)
-                ctx.scale(1, -1)
+    for (const cam of game.getDecendents()) {
+        if (cam instanceof JJS_Cam || !playing) {
+            let _canv = document.createElement("canvas")
+            _canv.width = cam?.Transform?.Size?.x || 100
+            _canv.height = cam?.Transform?.Size?.y || 100
+            let _ctx = _canv.getContext("2d")
+            
+            _ctx.resetTransform()
+            _ctx.fillStyle = cam.backgroundColor
+            _ctx.fillRect(0, 0, _canv.width, _canv.height)
 
-                try {
-                    obj[comp.parsedValue.name].render?.()
-                } catch (e) {
-                    console.error(e)
-                    playing = true
-                    playClick()
+            if (!playing) {
+                _ctx = ctx
+                _canv = canvas   
+            }
+            for (const obj of game.getDecendents()) {
+                for (const comp of obj.components) {
+                    if (obj[comp.parsedValue.name]?.render) {
+                        _ctx.resetTransform()
+                        if (playing) {
+                            _ctx.translate(-cam?.Transform?.Pos?.x || 0, cam?.Transform?.Pos?.y || 0)
+                            _ctx.rotate(cam?.Transform?.Rot || 0)
+                        } else {
+                            _ctx.translate(editorPos.x, editorPos.y)
+                        }
+
+                        _ctx.translate(_canv.width/2, _canv.height/2)
+                        _ctx.scale(1, -1)
+
+                        try {
+                            obj[comp.parsedValue.name].render?.(_ctx)
+                        } catch (e) {
+                            console.error(e)
+                            playing = true
+                            playClick()
+                        }
+                    }
                 }
             }
+
+            if (cam?.Camera?.renderToScreen && playing) {
+                ctx.drawImage(_canv, 0, 0, _canv.width, _canv.height, 0, 0, canvas.width, canvas.height)
+            }
         }
+        if (!playing) break
     }
 }
 
@@ -85,15 +121,24 @@ function stop() {
     requestAnimationFrame(editorLoop)
 }
 
-function editorLoop() {
+function editorLoop() {    
+    editorPos.y += (editorKeys.w || 0) * 10 / editorZoom
+    editorPos.x += (editorKeys.a || 0) * 10 / editorZoom
+    editorPos.y -= (editorKeys.s || 0) * 10 / editorZoom
+    editorPos.x -= (editorKeys.d || 0) * 10 / editorZoom
+    editorZoom = Math.min(Math.max(editorZoom + ((editorKeys['='] || 0)*editorZoom/100) - ((editorKeys['-'] || 0)*editorZoom/100), 0.01), 1000)
+
     renderScreen()
 
     for (const obj of game.getDecendents()) {
         for (const comp of obj.components) {
-            if (obj[comp.parsedValue.name].editorRender) {
+            if (obj[comp.parsedValue.name]?.editorRender) {
                 ctx.resetTransform()
+                
                 ctx.translate(canvas.width/2, canvas.height/2)
-                ctx.scale(1, -1)
+                ctx.scale(editorZoom, -editorZoom)
+                ctx.translate(editorPos.x, -editorPos.y)
+                
                 try {
                     obj[comp.parsedValue.name].editorRender?.()
                 } catch (e) {

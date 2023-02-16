@@ -13,6 +13,21 @@ const componentSelectMenuItems = [
         events: {
             click: () => {if (!(selectedComponentObject && selectedScenesMenuObject)) return; selectedScenesMenuObject.addComponent(selectedComponentObject); updateInspector()}
         }
+    },
+    {
+        content: `Delete`,
+        events: {
+            click: () => {
+                while (selectedComponentObject.objects.length > 0) {
+                    selectedComponentObject.objects[0].removeComponent(selectedComponentObject)
+                }
+
+                rawComponents.splice(rawComponents.indexOf(selectedComponentObject), 1)
+
+                updateComponents()
+                updateInspector()
+            }
+        }
     }
 ]
 
@@ -68,10 +83,10 @@ function updateComponents() {
                 selectedComponent.style.backgroundColor = ""
             }
 
-            window.editor.getModel().setValue(component.value)
-
             selectedComponent = componentWrapper
             selectedComponentObject = component
+            
+            window.editor.getModel().setValue(component.value)
 
             componentWrapper.style.backgroundColor = "rgba(64, 64, 255, 80%)"  
         }
