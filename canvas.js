@@ -17,8 +17,8 @@ function addEvent(event, func) {
 }
 
 var editorKeys = {}
-document.addEventListener("keydown", e => editorKeys[e.key] = true)
-document.addEventListener("keyup", e => editorKeys[e.key] = false)
+canvas.addEventListener("keydown", e => editorKeys[e.key] = true)
+canvas.addEventListener("keyup", e => editorKeys[e.key] = false)
 
 var editorPos = new Vec2()
 var editorZoom = 1
@@ -36,7 +36,7 @@ function renderScreen() {
             let _ctx = _canv.getContext("2d")
             
             _ctx.resetTransform()
-            _ctx.fillStyle = cam.backgroundColor
+            _ctx.fillStyle = playing ? cam.Camera.backgroundColor : "black"
             _ctx.fillRect(0, 0, _canv.width, _canv.height)
 
             if (!playing) {
@@ -47,20 +47,22 @@ function renderScreen() {
                 for (const comp of obj.components) {
                     if (obj[comp.parsedValue.name]?.render) {
                         _ctx.resetTransform()
+                        _ctx.translate(_canv.width/2, _canv.height/2)
+                        
                         if (playing) {
                             _ctx.translate(-cam?.Transform?.Pos?.x || 0, cam?.Transform?.Pos?.y || 0)
-                            _ctx.rotate(cam?.Transform?.Rot || 0)
+                            _ctx.rotate(-cam?.Transform?.Rot || 0)
                         } else {
+                            _ctx.scale(editorZoom, editorZoom)
                             _ctx.translate(editorPos.x, editorPos.y)
                         }
 
-                        _ctx.translate(_canv.width/2, _canv.height/2)
                         _ctx.scale(1, -1)
 
                         try {
                             obj[comp.parsedValue.name].render?.(_ctx)
                         } catch (e) {
-                            console.error(e)
+                            console.error(`Error in component "${comp.parsedValue.name}" on object "${obj.Name}" during "render()"`, e)
                             playing = true
                             playClick()
                         }
@@ -98,7 +100,7 @@ function start() {
             try {
                 obj[comp.parsedValue.name].start?.()
             } catch (e) {
-                console.error(e)
+                console.error(`Error in component "${comp.parsedValue.name}" on object "${obj.Name}" during "start()"`, e)
                 playing = true
                 playClick()
             }
@@ -142,7 +144,7 @@ function editorLoop() {
                 try {
                     obj[comp.parsedValue.name].editorRender?.()
                 } catch (e) {
-                    console.error(e)
+                    console.error(`Error in component "${comp.parsedValue.name}" on object "${obj.Name}" during "editorRender()"`, e)
                     playing = true
                     playClick()
                 }
@@ -161,11 +163,11 @@ function gameLoop() {
             try {
                 obj[comp.parsedValue.name].update?.()
             } catch (e) {
-                console.error(e)
+                console.error(`Error in component "${comp.parsedValue.name}" on object "${obj.Name}" during "update()"`, e)
                 playing = true
                 playClick()
             }
-            if (tick % 10 == 0) {
+            if (tick % 50 == 0) {
                 updateInspector()
                 updateSceneList()
             }

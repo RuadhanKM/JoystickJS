@@ -122,7 +122,7 @@ function updateInspector() {
         removeComponent.style.float = "right"
 
         removeComponent.addEventListener("click", () => {
-            selectedScenesMenuObject.removeComponent(component)
+            selectedScenesMenuObject.removeComponent(rawComponent)
             updateInspector()
         })
 

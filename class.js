@@ -125,6 +125,25 @@ class JJS_Object {
         return false
     }
 
+    getParents() {
+        let cur = this
+        let out = []
+
+        while (cur != workspace) {
+            cur = cur.parent
+            out.push(cur)
+        }
+
+        return out
+    }
+
+    isParentOf(object) {
+        for (const obj of object.getDecendents()) {
+            if (obj == object) return true
+        }
+        return false
+    }
+
     findFirstChild(childName) {
         for (const child of this.children) {
             if (child.Name == childName) return child 

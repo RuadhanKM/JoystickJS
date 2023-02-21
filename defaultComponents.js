@@ -9,22 +9,51 @@ function addDefaultComponent(value) {
 const componentTransform = addDefaultComponent(
 `class Transform {
     constructor() {
-        this.Pos = new Vec2()
+        this.PosOffset = new Vec2()
         this.Size = new Vec2()
-        this.Rot = 0
+        this.RotOffset = 0
 
         this.inspector = [
-            "Pos",
+            "PosOffset",
             "Size",
-            "Rot"
+            "RotOffset"
         ]
     }
+    get Pos() {
+        if (this.object.parent.Transform) {
+            let r = this.object.parent.Transform.Rot
+            let pMag = this.PosOffset.mag()
+            let rOffset = new Vec2((Math.cos(r*0.01745))*pMag-this.PosOffset.x, (Math.sin(r*0.01745))*pMag-this.PosOffset.y)
+
+            return this.PosOffset
+                .add(this.object.parent.Transform.Pos)
+                .add(rOffset) 
+        }
+        else 
+            return this.PosOffset
+    }
+    set Pos(v) {
+        this.PosOffset = v
+    }
+    
+    get Rot() {
+        if (this.object.parent.Transform) 
+            return this.RotOffset + this.object.parent.Transform.Rot; 
+        else 
+            return this.RotOffset
+    }
+    set Rot(v) {
+        this.RotOffset = v
+    }
+    
     setCtxTransform(c) {
+        let p = this.Pos
+
         c.translate(
-            this.Pos.x,
-            this.Pos.y
+            p.x,
+            p.y
         )
-        c.rotate(this.Rot)
+        c.rotate(this.Rot*0.01745)
     }
 }`)
 
@@ -177,62 +206,64 @@ addDefaultComponent(
 	}
 	update() {
         this.Grounded = false
+        if (this.Static) return
 
 		for (const obj of game.getDecendents()) {
             if (obj == this.object) continue
             if (!obj.AABBCollider || !obj.Transform || !this.object.Transform) continue
 
-            if (this.Static) continue
-
             let t = this.object.Transform
             let o = obj.Transform
 
+            let tp = t.Pos
+            let op = o.Pos
+
             if (
-                t.Pos.x + this.Size.x/2 > o.Pos.x - obj.AABBCollider.Size.x/2 &&
-                t.Pos.x - this.Size.x/2 < o.Pos.x + obj.AABBCollider.Size.x/2 &&
-                t.Pos.y + this.Size.y/2 > o.Pos.y - obj.AABBCollider.Size.y/2 &&
-                t.Pos.y - this.Size.y/2 < o.Pos.y + obj.AABBCollider.Size.y/2
+                tp.x + this.Size.x/2 > op.x - obj.AABBCollider.Size.x/2 &&
+                tp.x - this.Size.x/2 < op.x + obj.AABBCollider.Size.x/2 &&
+                tp.y + this.Size.y/2 > op.y - obj.AABBCollider.Size.y/2 &&
+                tp.y - this.Size.y/2 < op.y + obj.AABBCollider.Size.y/2
             ) {
-                let tDis = Math.abs((t.Pos.y - this.Size.y/2) - (o.Pos.y + obj.AABBCollider.Size.y/2))
-                let bDis = Math.abs((t.Pos.y + this.Size.y/2) - (o.Pos.y - obj.AABBCollider.Size.y/2))
-                let lDis = Math.abs((t.Pos.x + this.Size.x/2) - (o.Pos.x - obj.AABBCollider.Size.x/2))
-                let rDis = Math.abs((t.Pos.x - this.Size.x/2) - (o.Pos.x + obj.AABBCollider.Size.x/2))
+                let tDis = Math.abs((tp.y - this.Size.y/2) - (op.y + obj.AABBCollider.Size.y/2))
+                let bDis = Math.abs((tp.y + this.Size.y/2) - (op.y - obj.AABBCollider.Size.y/2))
+                let lDis = Math.abs((tp.x + this.Size.x/2) - (op.x - obj.AABBCollider.Size.x/2))
+                let rDis = Math.abs((tp.x - this.Size.x/2) - (op.x + obj.AABBCollider.Size.x/2))
 
                 let min = Math.min(tDis, bDis, lDis, rDis)
 
                 if (min == tDis) {
                     if (obj.AABBCollider.Static) {
-                        this.object.PlayerController.Vel.y = 0
-                        t.Pos.y = o.Pos.y+obj.AABBCollider.Size.y/2+this.Size.y/2
+                        if (this.object.PlayerController) this.object.PlayerController.Vel.y = 0
+                        tp.y = op.y+obj.AABBCollider.Size.y/2+this.Size.y/2
 
                         this.Grounded = true
                     } else {
-                        t.Pos.y -= min/2
-                        o.Pos.y += min/2
+                        tp.y += min/2
+                        op.y -= min/2
                     }
                 } else if (min == bDis) {
                     if (obj.AABBCollider.Static) {
-                        this.object.PlayerController.Vel.y = 0
-                        t.Pos.y = o.Pos.y-obj.AABBCollider.Size.y/2-this.Size.y/2
+                        if (this.object.PlayerController) this.object.PlayerController.Vel.y = 0
+                        tp.y = op.y-obj.AABBCollider.Size.y/2-this.Size.y/2
                     } else {
-                        t.Pos.y += min/2
-                        o.Pos.y -= min/2
+                        tp.y -= min/2
+                        op.y += min/2
                     }
                 } else if (min == lDis) {
                     if (obj.AABBCollider.Static) {
-                        this.object.PlayerController.Vel.x = 0
-                        t.Pos.x = o.Pos.x-obj.AABBCollider.Size.x/2-this.Size.x/2
+                        if (this.object.PlayerController) this.object.PlayerController.Vel.x = 0
+                        tp.x = op.x-obj.AABBCollider.Size.x/2-this.Size.x/2
                     } else {
-                        t.Pos.x += min/2
-                        o.Pos.x -= min/2
+                        tp.x -= min/2
+                        op.x += min/2
                     }
                 } else if (min == rDis) {
                     if (obj.AABBCollider.Static) {
-                        this.object.PlayerController.Vel.x = 0
-                        t.Pos.x = o.Pos.x+obj.AABBCollider.Size.x/2+this.Size.x/2
+                        if (this.object.PlayerController) this.object.PlayerController.Vel.x = 0
+                        tp.x = op.x+obj.AABBCollider.Size.x/2+this.Size.x/2
                     } else {
-                        t.Pos.x -= min/2
-                        o.Pos.x += min/2
+                        tp.x += min/2
+                        op.x -= min/2
                     }
                 }
             }
