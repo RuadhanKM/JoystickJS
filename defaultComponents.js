@@ -21,9 +21,16 @@ const componentTransform = addDefaultComponent(
     }
     get Pos() {
         if (this.object.parent.Transform) {
-            let r = this.object.parent.Transform.Rot
+            let r = this.object.parent.Transform.Rot*0.01745
             let pMag = this.PosOffset.mag()
-            let rOffset = new Vec2((Math.cos(r*0.01745))*pMag-this.PosOffset.x, (Math.sin(r*0.01745))*pMag-this.PosOffset.y)
+
+            let sinr = Math.sin(r)
+            let cosr = Math.cos(r)
+
+            let rOffset = new Vec2(
+                this.PosOffset.x*cosr - this.PosOffset.y*sinr,
+                this.PosOffset.x*sinr + this.PosOffset.y*cosr
+            ).sub(this.PosOffset)
 
             return this.PosOffset
                 .add(this.object.parent.Transform.Pos)
@@ -120,6 +127,7 @@ addDefaultComponent(
         this.Vel = new Vec2()
 
         this.Keys = {}
+        this.Mouse = new Vec2()
 
         this.inspector = [
             "Acceleration",
@@ -141,6 +149,10 @@ addDefaultComponent(
         })
         addEvent("keyup", e => {
             this.Keys[e.key] = false
+        })
+        addEvent("mousemove", e => {
+            this.Mouse.x = e.clientX
+            this.Mouse.y = e.clientY
         })
 	}
 	update() {
@@ -200,9 +212,6 @@ addDefaultComponent(
             "Size",
             "Static"
         ]
-	}
-	start() {
-		
 	}
 	update() {
         this.Grounded = false

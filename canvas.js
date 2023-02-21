@@ -12,7 +12,7 @@ var lastGameState
 var events = []
 
 function addEvent(event, func) {
-    document.addEventListener(event, func)
+    canvas.addEventListener(event, func)
     events.push([event, func])
 }
 
