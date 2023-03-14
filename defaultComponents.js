@@ -10,11 +10,13 @@ const componentTransform = addDefaultComponent(
 `class Transform {
     constructor() {
         this.PosOffset = new Vec2()
+        this.Depth = 1
         this.Size = new Vec2()
         this.RotOffset = 0
 
         this.inspector = [
             "PosOffset",
+            "Depth",
             "Size",
             "RotOffset"
         ]

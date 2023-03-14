@@ -36,6 +36,7 @@ body {
     margin: auto;
     overflow: hidden;
     pointer-events: all;
+    outline: none;
 }
 
 .component {

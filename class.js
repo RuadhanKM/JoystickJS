@@ -160,35 +160,3 @@ class JJS_Object {
 var game = new JJS_Object({children: []})
 var workspace = new JJS_Object(game)
 workspace.Name = "Workspace"
-
-class JJS_Folder extends JJS_Object {
-    constructor(_parent=workspace) {
-        super(_parent)
-        this.class = OBJECT_TYPE_FOLDER
-        this.Name = "New Folder"
-    }
-}
-
-class JJS_Group extends JJS_Object {
-    constructor(_parent=workspace) {
-        super(_parent)
-        this.class = OBJECT_TYPE_GROUP
-        this.Name = "New Group"
-    }
-}
-
-class JJS_Rect extends JJS_Object {
-    constructor(_parent=workspace) {
-        super(_parent)
-        this.class = OBJECT_TYPE_RECT
-        this.Name = "New Rect"
-    }
-}
-
-class JJS_Cam extends JJS_Rect {
-    constructor(_parent=workspace) {
-        super(_parent)
-        this.class = OBJECT_TYPE_CAM
-        this.Name = "New Cam"
-    }
-}

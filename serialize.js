@@ -15,7 +15,7 @@ function serializeGameState() {
             id++
             child.id = id
  
-            tempObjOut += id + "@" + JJStypeof(child) + "@" + btoa(toBinary(child.Name)) + "@" + (child == selectedScenesMenuObject) + "@" + child.sceneMenuCollapsed + "@" + child.parent.id + "@"
+            tempObjOut += id + "@" + btoa(toBinary(child.Name)) + "@" + (child == selectedScenesMenuObject) + "@" + child.sceneMenuCollapsed + "@" + child.parent.id + "@"
 
             let tempComps = []
             for (const comp of child.components) {
@@ -72,14 +72,13 @@ function deserializeGameState(gameState) {
         let objData1 = obj.split("@")
 
         let id = objData1[0]
-        let objType = objData1[1]
-        let name = fromBinary(atob(objData1[2]))
-        let sceneSelected = objData1[3] == "true"
-        let sceneMenuCollapsed = objData1[4]
-        let parentId = objData1[5]
-        let comps = objData1[6].split(">")
+        let name = fromBinary(atob(objData1[1]))
+        let sceneSelected = objData1[2] == "true"
+        let sceneMenuCollapsed = objData1[3]
+        let parentId = objData1[4]
+        let comps = objData1[5].split(">")
 
-        let objInst = new (JJSFromString(objType))({children: []})
+        let objInst = new JJS_Object({children: []})
         objInst.Name = name
         objInst.sceneMenuCollapsed = sceneMenuCollapsed == "true"
         objInst.id = id

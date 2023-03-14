@@ -2,25 +2,19 @@ const sceneMenuItems = [
     {
         content: `New Folder`,
         events: {
-            click: () => addSceneObject(new JJS_Folder(selectedScenesMenuObject))
-        }
-      },
-    {
-        content: `New Group`,
-        events: {
-            click: () => addSceneObject(new JJS_Group(selectedScenesMenuObject))
+            click: () => addSceneObject(new JJS_Object(selectedScenesMenuObject), "folder")
         }
     },
     {
         content: `New Rect`,
         events: {
-            click: () => addSceneObject(new JJS_Rect(selectedScenesMenuObject))
+            click: () => addSceneObject(new JJS_Object(selectedScenesMenuObject), "rect")
         }
     },
     {
         content: `New Cam`,
         events: {
-            click: () => addSceneObject(new JJS_Cam(selectedScenesMenuObject))
+            click: () => addSceneObject(new JJS_Object(selectedScenesMenuObject), "cam")
         }
     },
     {
@@ -32,19 +26,22 @@ const sceneMenuItems = [
     }
 ]
 
-function addSceneObject(object) {
-    if (object instanceof JJS_Cam) {
+function addSceneObject(object, type) {
+    if (type == "cam") {
         object.addComponent(componentTransform)
         object.addComponent(componentCamera)
+        object.Name = "New Cam"
+        if (cam?.Transform?.Size) cam.Transform.Size = new Vec2(1280, 720)
     }
-    else if (object instanceof JJS_Group) {
-        object.addComponent(componentTransform)
-    }
-    else if (object instanceof JJS_Rect) {
+    else if (type == "rect") {
         object.addComponent(componentTransform)
         object.addComponent(componentRenderer)
 
-        object.Transform.Size = new Vec2(20, 20)
+        if (object?.Transform?.Size) object.Transform.Size = new Vec2(20, 20)
+        object.Name = "New Rect"
+    }
+    else if (type == "folder") {
+        object.Name = "New Folder"
     }
     
     updateSceneList()

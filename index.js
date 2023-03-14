@@ -1,6 +1,5 @@
-const cam = new JJS_Cam()
-addSceneObject(cam)
-cam.Transform.Size = new Vec2(1280, 720)
+const cam = new JJS_Object(workspace)
+addSceneObject(cam, "cam")
 cam.Camera.renderToScreen = true
 
 updateSceneList()

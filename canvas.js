@@ -29,7 +29,7 @@ function renderScreen() {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     for (const cam of game.getDecendents()) {
-        if (cam instanceof JJS_Cam || !playing) {
+        if (cam.Camera || !playing) {
             let _canv = document.createElement("canvas")
             _canv.width = cam?.Transform?.Size?.x || 100
             _canv.height = cam?.Transform?.Size?.y || 100
@@ -43,12 +43,15 @@ function renderScreen() {
                 _ctx = ctx
                 _canv = canvas   
             }
-            for (const obj of game.getDecendents()) {
+            for (const obj of game.getDecendents().sort((a, b) => (b.Transform?.Depth || 1) - (a.Transform?.Depth || 1))) {
                 for (const comp of obj.components) {
                     if (obj[comp.parsedValue.name]?.render) {
                         _ctx.resetTransform()
                         _ctx.translate(_canv.width/2, _canv.height/2)
                         
+                        if ((obj?.Transform?.Depth || 1) <= 0) continue
+                        _ctx.scale(1/(obj?.Transform?.Depth || 1), 1/(obj?.Transform?.Depth || 1))
+
                         if (playing) {
                             _ctx.translate(-cam?.Transform?.Pos?.x || 0, cam?.Transform?.Pos?.y || 0)
                             _ctx.rotate(-cam?.Transform?.Rot || 0)
@@ -116,7 +119,7 @@ function stop() {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     for (const event of events) {
-        document.removeEventListener(event[0], event[1])
+        canvas.removeEventListener(event[0], event[1])
     }
 
     deserializeGameState(lastGameState)
